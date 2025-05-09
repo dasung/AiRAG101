@@ -1,7 +1,8 @@
 # pdf_loader.py
 
 import os
-from langchain.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 documents = []
 
@@ -19,3 +20,11 @@ def load_pdfs(pdf_folder_path):
     for doc in documents:
         print("***************************************************************")
         print(doc.page_content)
+
+def chunk_pdf_data():
+    """
+    Function to chunk the documents using RecursiveCharacterTextSplitter.
+    """
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splits = text_splitter.split_documents(documents)
+    return splits
