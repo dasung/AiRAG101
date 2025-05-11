@@ -17,9 +17,9 @@ def load_pdfs(pdf_folder_path):
             docs = loader.load()
             documents.extend(docs)
 
-    for doc in documents:
-        print("***************************************************************")
-        print(doc.page_content)
+    #for doc in documents:
+    #    print("***************************************************************")
+    #    print(doc.page_content)
 
 def chunk_pdf_data():
     """

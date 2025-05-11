@@ -1,9 +1,24 @@
 # prompt_engine.py
-
+import os
 from langchain.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+import openai
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Define Azure OpenAI configuration variables
+class Config:
+    AZURE_OPENAI_LLM_API_KEY = os.getenv("AZURE_OPENAI_LLM_API_KEY")
+    AZURE_OPENAI_LLM_ENDPOINT = os.getenv("AZURE_OPENAI_LLM_ENDPOINT")
+    AZURE_OPENAI_LLM_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_LLM_DEPLOYMENT_NAME")
+    AZURE_OPENAI_LLM_API_VERSION = os.getenv("AZURE_OPENAI_LLM_API_VERSION")
+    TEMPERATURE = float(os.getenv("TEMPERATURE", 0.4))
+
+config = Config()
 
 # Create a Prompt Template
 def create_prompt_template():
@@ -17,11 +32,21 @@ def create_prompt_template():
     """
     return ChatPromptTemplate.from_template(prompt)
 
-def initialize_LLM(vectorstore, prompt):
+def initialize_LLM(vectorstore, prompt_template):
     """
-    Function to initialize the LLM with the given vectorstore and prompt template.
+    Function to initialize the LLM with the given vectorstore and prompt template using Azure OpenAI.
     """
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0, api_key="<Enter your API Key>")
+    # Create AzureOpenAI
+    llm  = AzureChatOpenAI(
+        deployment_name = config.AZURE_OPENAI_LLM_DEPLOYMENT_NAME,  # Must match Azure portal
+        model_name = config.AZURE_OPENAI_LLM_DEPLOYMENT_NAME,  # Or your specific model
+        openai_api_key = config.AZURE_OPENAI_LLM_API_KEY,
+        openai_api_version = config.AZURE_OPENAI_LLM_API_VERSION,
+        azure_endpoint = config.AZURE_OPENAI_LLM_ENDPOINT,
+        temperature = config.TEMPERATURE
+    )
+
+
     retriever = vectorstore.as_retriever()
 
     def format_docs(docs):
@@ -29,14 +54,16 @@ def initialize_LLM(vectorstore, prompt):
 
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
-        | prompt
+        | prompt_template
         | llm
         | StrOutputParser()
     )
     return rag_chain
 
 def invoke_rag_chain(rag_chain, question):
-    """
-    Function to invoke the RAG Chain with a given question.
-    """
-    return rag_chain.invoke(question)
+    """Invokes the RAG chain with error handling"""
+    try:
+        return rag_chain.invoke(question)
+    except Exception as e:
+        print(f"Error invoking RAG chain: {e}")
+        raise

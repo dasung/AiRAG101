@@ -1,12 +1,34 @@
 # AiRAG101
 
-1. create [env.yml] file to install following in our pythonbackend project.
+### **Setup Env**
+
+Use the following commands to create env:
+
+    $ conda env create -f env.yml
+    $ conda init
+
+
+### **Usual System Startup**
+    $ conda activate rag101
+    $ uvicorn main:app --reload
+
+### **Current Architecture**
+
+| Component          | Hosting        | Model Used               | Purpose                     |
+|--------------------|---------------|--------------------------|-----------------------------|
+| `embedder.py`      | Azure OpenAI  | `text-embedding-ada-002` | Generates document embeddings |
+| `prompt_engine.py` | Azure OpenAI  | `gpt-4.1` (or similar)   | Handles chat/completions     |
+
+
+### **Code Review**
+
+1. [env.yml] file to install following in our pythonbackend project.
     - We will be using LangChain framework
     - python=3.9
     - PyPDFLoader  for pdf processing
     - FAISS
 
-2. create [pdf_loader.py]. -> load_pdfs()
+2. [pdf_loader.py]. -> load_pdfs()
     - this contains logic for loading pdf function.
     - use for loop too load reach an every downloaded pdf to be loaded
     - keeps documents[] globally
@@ -18,7 +40,7 @@
         print(doc.page_content)
 ```
 
-3. [pdf_loader.py] add a new function chuck_pdf_data() to chunking the document read by LangChain.
+3. [pdf_loader.py] to chunking the document read by LangChain.
     - use documents[]
     - use RecursiveCharacterTextSplitter method of LangChain to do this
 ```
@@ -28,7 +50,7 @@
 ```
     - returns splits to callee
 
-4. [embedder.py] this new file 
+4. [embedder.py] 
     - function create_embeddings() to find embeddings of chunks. use OpenAIEmbeddings()
     - use FAISS as the Vector Store to save our embeddings.
 
@@ -52,7 +74,7 @@ question = {question}
 prompt = ChatPromptTemplate.from_template(prompt)
 ```
 
-6. Add new function to [prompt_engine.py] ->  initialize_LLM()
+6. [prompt_engine.py] ->  initialize_LLM()
 
 ```
 from langchain_openai import ChatOpenAI
@@ -76,3 +98,9 @@ rag_chain = (
 ```
 rag_chain.invoke("Tell me more about law number 30")
 ```
+
+8. [main.py]
+    - this loads pdf and chunk it using [pdf_loader.py]
+    - splits passed to [embedder.py]
+    - vector store passed to initialize_LLM()
+    - finally calls invoke_rag_chain() and display the LLM result. 
