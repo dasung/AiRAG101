@@ -8,13 +8,13 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Define Azure OpenAI configuration variables
+# 1. Define Azure OpenAI configuration variables
 AZURE_OPENAI_EMBEDDER_API_KEY = os.getenv("AZURE_OPENAI_EMBEDDER_API_KEY")
 AZURE_OPENAI_EMBEDDER_ENDPOINT = os.getenv("AZURE_OPENAI_EMBEDDER_ENDPOINT")
 AZURE_OPENAI_EMBEDDER_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_EMBEDDER_DEPLOYMENT_NAME")
 AZURE_OPENAI_EMBEDDER_API_VERSION = os.getenv("AZURE_OPENAI_EMBEDDER_API_VERSION")
 
-# 1. Initialize Azure OpenAI Embeddings
+# 2. Initialize Azure OpenAI Embeddings
 azure_embedder = AzureOpenAIEmbeddings(
     azure_deployment = AZURE_OPENAI_EMBEDDER_DEPLOYMENT_NAME,
     azure_endpoint = AZURE_OPENAI_EMBEDDER_ENDPOINT,
@@ -22,38 +22,16 @@ azure_embedder = AzureOpenAIEmbeddings(
     api_version = AZURE_OPENAI_EMBEDDER_API_VERSION
 )
 
-# 2. Custom Validation Function
-class EmbeddingValidator:
-    @staticmethod
-    def validate(embeddings):
-        """Validate embeddings structure and content."""
-        if not embeddings:
-            raise ValueError("No embeddings returned!")
-        
-        for i, emb in enumerate(embeddings):
-            if not isinstance(emb, list):
-                raise ValueError(f"Embedding {i} is not a list")
-            if len(emb) == 0:
-                raise ValueError(f"Embedding {i} is empty")
-            if not all(isinstance(x, float) for x in emb):
-                raise ValueError(f"Embedding {i} contains non-float values")
-        
-        print(f"✅ Validated {len(embeddings)} embeddings (dim={len(embeddings[0])})")
-
-
-
-def create_embeddings(documents):
+# 3. Create embeddings and Inspect the vectorstore
+def create_embeddings(documents, db_path="./vectorstore"):
     """Create and validate embeddings using Azure OpenAI."""
 
     print(f"Input type: {type(documents[0])}")
 
     try:
         # Generate embeddings
-        #embeddings = azure_embedder.embed_documents(documents)
-        
-        # Validate
-        #EmbeddingValidator.validate(embeddings)
-        
+        #embeddings = azure_embedder.embed_documents(documents) # Happens automatically through FAISS
+               
         # Facebook AI Similarity Search - high-performance vector similarity search library
         vectorstore = FAISS.from_documents(documents, azure_embedder)
 
@@ -66,6 +44,10 @@ def create_embeddings(documents):
         print(f"Total documents in vectorstore: {vectorstore.index.ntotal}")
 
         inspect_vectorstore(vectorstore)  # Inspect the vectorstore
+
+        # Save the vectorstore embeddings to disk
+        print("Saving vectorstore to disk...")
+        vectorstore.save_local(db_path)
 
         return vectorstore
         
@@ -125,3 +107,12 @@ def inspect_vectorstore(vectorstore):
             print("No results found")
     except Exception as e:
         print(f"Search failed: {str(e)}")
+
+
+def load_embeddings(db_path="./vectorstore"):
+    """Load pre-built vectorstore."""
+    return FAISS.load_local(
+        folder_path=db_path,
+        embeddings=azure_embedder,
+        allow_dangerous_deserialization=True  # Needed for security
+    )

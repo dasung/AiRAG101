@@ -1,19 +1,28 @@
 # main.py
 
 from pdf_loader import load_pdfs, chunk_pdf_data
-from embedder import create_embeddings
+from embedder import create_embeddings, load_embeddings
 from prompt_engine import create_prompt_template, initialize_LLM, invoke_rag_chain
 
+import os
+
+
 def main():
-    # Step 1: Load PDFs
-    pdf_folder_path = "./data/"  # Replace with the actual path
-    load_pdfs(pdf_folder_path)
 
-    # Step 2: Chunk the loaded PDFs
-    splits = chunk_pdf_data()
+    if not os.path.exists("./vectorstore"):
+        # Step 1: Load PDFs
+        pdf_folder_path = "./data/"  
+        load_pdfs(pdf_folder_path)
 
-    # Step 3: Create embeddings for the chunks
-    vectorstore = create_embeddings(splits)
+        # Step 2: Chunk the loaded PDFs
+        splits = chunk_pdf_data()
+
+        # Step 3: Create embeddings for the chunks
+        vectorstore = create_embeddings(splits)
+    else:
+        # Normal operation
+        print("Loading embedding from disk...")
+        vectorstore = load_embeddings()
 
     # Step 4: Initialize the LLM
     prompt = create_prompt_template()
