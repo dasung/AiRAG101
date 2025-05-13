@@ -36,7 +36,7 @@ def initialize_LLM(vectorstore, prompt_template):
     """
     Function to initialize the LLM with the given vectorstore and prompt template using Azure OpenAI.
     """
-    # Create AzureOpenAI
+    # AzureChatOpenAI eeminates the need for a separate embedding model
     llm  = AzureChatOpenAI(
         deployment_name = config.AZURE_OPENAI_LLM_DEPLOYMENT_NAME,  # Must match Azure portal
         model_name = config.AZURE_OPENAI_LLM_DEPLOYMENT_NAME,  # Or your specific model
@@ -46,12 +46,16 @@ def initialize_LLM(vectorstore, prompt_template):
         temperature = config.TEMPERATURE
     )
 
-
+    # The "magic" happens inside LangChain's retriever abstraction:
+    # search_type="similarity", "mmr", "svm" -> Default (similarity) relevant documents from the vector store
+    # search_kwargs={"k": 4} -> Number of docs to retrieve
     retriever = vectorstore.as_retriever()
+
 
     def format_docs(docs):
         return "\n\n".join(doc.page_content for doc in docs)
 
+    # RAG Integration
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt_template

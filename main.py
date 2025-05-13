@@ -20,7 +20,7 @@ def main():
     rag_chain = initialize_LLM(vectorstore, prompt)
 
     # Step 5: Invoke the RAG Chain
-    question = "Tell me more about law number 30"  # Example question
+    question = "Named me best 3 hotels to stay in dubai"  # Example question
     result = invoke_rag_chain(rag_chain, question)
 
     # Step 6: Display the result

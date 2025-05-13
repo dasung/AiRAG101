@@ -15,7 +15,7 @@ AZURE_OPENAI_EMBEDDER_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_EMBEDDER_DEPLOYM
 AZURE_OPENAI_EMBEDDER_API_VERSION = os.getenv("AZURE_OPENAI_EMBEDDER_API_VERSION")
 
 # 1. Initialize Azure OpenAI Embeddings
-embedder = AzureOpenAIEmbeddings(
+azure_embedder = AzureOpenAIEmbeddings(
     azure_deployment = AZURE_OPENAI_EMBEDDER_DEPLOYMENT_NAME,
     azure_endpoint = AZURE_OPENAI_EMBEDDER_ENDPOINT,
     openai_api_key = AZURE_OPENAI_EMBEDDER_API_KEY,
@@ -49,13 +49,13 @@ def create_embeddings(documents):
 
     try:
         # Generate embeddings
-        #embeddings = embedder.embed_documents(documents)
+        #embeddings = azure_embedder.embed_documents(documents)
         
         # Validate
         #EmbeddingValidator.validate(embeddings)
         
-        # Create FAISS vectorstore
-        vectorstore = FAISS.from_documents(documents, embedder)
+        # Facebook AI Similarity Search - high-performance vector similarity search library
+        vectorstore = FAISS.from_documents(documents, azure_embedder)
 
         # Get embeddings for the first 3 documents
         
@@ -64,8 +64,64 @@ def create_embeddings(documents):
         print(f"First document embedding (first 5 dims): {doc_embeddings[0][:5]}")
 
         print(f"Total documents in vectorstore: {vectorstore.index.ntotal}")
+
+        inspect_vectorstore(vectorstore)  # Inspect the vectorstore
+
         return vectorstore
         
     except Exception as e:
         print(f"❌ Error: {str(e)}")
         raise
+
+def inspect_vectorstore(vectorstore):
+    """Properly inspect FAISS vectorstore contents"""
+    print(f"\n{'='*50}\nVectorstore Inspection\n{'='*50}")
+    
+    # 1. vectorstore property
+    print(f"FAISS Index Type: {type(vectorstore.index).__name__}")
+        # FAISS structure name based on data size
+            # IndexFlatL2: Exact search (small datasets)
+            # IndexIVFFlat: Approximate search (large datasets)
+            # IndexIVFPQ: Compressed vectors (huge datasets)
+
+    print(f"Vectors: {vectorstore.index.ntotal}")
+    print(f"Dimensions: {vectorstore.index.d}")
+
+
+    # 2. Get all document IDs (FAISS uses hashes, not sequential integers)
+    doc_ids = list(vectorstore.docstore._dict.keys())
+    print(f"📄 Total Documents: {len(doc_ids)}")
+    
+    if not doc_ids:
+        print("No documents found!")
+        return
+    
+    # 3. Get first document (using actual ID, not assumed index 0)
+    first_id = doc_ids[0]
+    first_doc = vectorstore.docstore._dict[first_id]
+    print(f"\n📝 First Document:\nContent: {first_doc.page_content[30:60]}...")
+    print(f"Metadata: {first_doc.metadata}")
+    
+    # 4. Check embedding dimensions
+    try:
+        # FAISS indexes may not support reconstruct() for all index types
+        embedding_dim = vectorstore.index.d
+        print(f"\n🧮 Embedding Dimensions: {embedding_dim} (per vector)") #1536-dimensional vector per document
+        
+        # For index types that support reconstruction:
+        if hasattr(vectorstore.index, 'reconstruct'):
+            sample_embedding = vectorstore.index.reconstruct(0)  # Now refers to vector position
+            print(f"Sample Vector (first 5): {sample_embedding[:5]}...")
+    except Exception as e:
+        print(f"⚠️ Could not inspect embeddings: {str(e)}")
+    
+    # 5. Test search
+    print("\n🔍 Testing search...")
+    try:
+        results = vectorstore.similarity_search("cricket", k=1)
+        if results:
+            print(f"Top Result: {results[0].page_content[:200]}...")
+        else:
+            print("No results found")
+    except Exception as e:
+        print(f"Search failed: {str(e)}")

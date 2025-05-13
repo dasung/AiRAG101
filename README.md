@@ -20,6 +20,11 @@ Use the following commands to create env:
 | `prompt_engine.py` | Azure OpenAI  | `gpt-4.1` (or similar)   | Handles chat/completions     |
 
 
+### **Design**
+
+
+
+
 ### **Code Review**
 
 1. [env.yml] file to install following in our pythonbackend project.
