@@ -16,7 +16,7 @@ class Config:
     AZURE_OPENAI_LLM_ENDPOINT = os.getenv("AZURE_OPENAI_LLM_ENDPOINT")
     AZURE_OPENAI_LLM_DEPLOYMENT_NAME = os.getenv("AZURE_OPENAI_LLM_DEPLOYMENT_NAME")
     AZURE_OPENAI_LLM_API_VERSION = os.getenv("AZURE_OPENAI_LLM_API_VERSION")
-    TEMPERATURE = float(os.getenv("TEMPERATURE", 0.4))
+    LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", 0.4))
 
 config = Config()
 
@@ -43,7 +43,7 @@ def initialize_LLM(vectorstore, prompt_template):
         openai_api_key = config.AZURE_OPENAI_LLM_API_KEY,
         openai_api_version = config.AZURE_OPENAI_LLM_API_VERSION,
         azure_endpoint = config.AZURE_OPENAI_LLM_ENDPOINT,
-        temperature = config.TEMPERATURE
+        temperature = config.LLM_TEMPERATURE
     )
 
     # The "magic" happens inside LangChain's retriever abstraction:

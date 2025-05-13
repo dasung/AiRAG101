@@ -28,6 +28,28 @@ Use the following commands to create env:
 ![design](https://github.com/user-attachments/assets/1bebfef0-6e78-4dde-bafd-6e4f257d5b20)
 
 
+### **Project Structure**
+
+```
+AiRAG101/
+├── data/
+│   └── *.pdf store
+├── .env            -> to specify your local configurations
+|
+├── vectorstore/ 
+│   ├── index.fasis -> optimized vector search structure by FASIS
+│   └── index.pkl   -> document store - original text chunks + metadata
+├── src/
+│   ├── embedder.py
+│   ├── prompt_engine.py
+│   └── main.py
+|
+├── docs/
+│   └── design.astah 
+|
+└── README.md
+```
+
 
 ### **Code Review**
 

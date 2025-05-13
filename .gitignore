@@ -175,3 +175,5 @@ cython_debug/
 
 # local database
 ./vectorstore/
+vectorstore/index.faiss
+vectorstore/index.pkl
