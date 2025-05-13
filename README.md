@@ -11,6 +11,9 @@ Use the following commands to create env:
 ### **Usual System Startup**
     $ conda activate rag101
     $ uvicorn main:app --reload
+    $ conda env update -f env.yml (if env.yml is updated)
+
+*Note-* If you change EMBEDDING_MODE configuration, make sure to delete vectorstore created locally.
 
 ### **Current Architecture**
 
