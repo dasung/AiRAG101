@@ -11,6 +11,7 @@ def main():
 
     if not os.path.exists("./vectorstore"):
         # Step 1: Load PDFs
+        print("⚠️  Vector DB is not found!")
         pdf_folder_path = "./data/"  
         load_pdfs(pdf_folder_path)
 
@@ -21,7 +22,7 @@ def main():
         vectorstore = create_embeddings(splits)
     else:
         # Normal operation
-        print("Loading embedding from disk...")
+        print("✅  Vector DB found, loading from disk...")
         vectorstore = load_embeddings()
 
     # Step 4: Initialize the LLM
@@ -33,7 +34,7 @@ def main():
     result = invoke_rag_chain(rag_chain, question)
 
     # Step 6: Display the result
-    print("Result:", result)
+    print("\n📋  LLM Response:\n", result)
 
 if __name__ == "__main__":
     main()

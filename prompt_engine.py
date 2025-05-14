@@ -66,6 +66,11 @@ def initialize_LLM(vectorstore, prompt_template):
 
 def invoke_rag_chain(rag_chain, question):
     """Invokes the RAG chain with error handling"""
+
+    # Rag chain is a callable object, so we can directly call it with the question
+    # Frist question text is automatically embedded using the same embedder
+    #       This happens inside [retriever.get_relevant_documents(question)]
+    # LLM: Handles text→text (generation only)
     try:
         return rag_chain.invoke(question)
     except Exception as e:
