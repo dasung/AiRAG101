@@ -25,7 +25,8 @@ def create_prompt_template():
     """
     Function to create a prompt template for the RAG Chain.
     """
-    prompt = """You are a cricket expert. You need to answer the question related to the law of cricket. 
+    prompt = """You are a training assitent to onbording enginners to trading system based software company. 
+    You need to answer the question related Stock Exchange and Related Software Components. 
     Given below is the context and question of the user.
     context = {context}
     question = {question}

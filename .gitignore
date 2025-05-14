@@ -177,3 +177,6 @@ cython_debug/
 ./vectorstore/
 vectorstore/index.faiss
 vectorstore/index.pkl
+
+# test
+/test/

@@ -12,7 +12,7 @@ def main():
     if not os.path.exists("./vectorstore"):
         # Step 1: Load PDFs
         print("⚠️  Vector DB is not found!")
-        pdf_folder_path = "./data/"  
+        pdf_folder_path = "./test/"  
         load_pdfs(pdf_folder_path)
 
         # Step 2: Chunk the loaded PDFs
@@ -30,7 +30,7 @@ def main():
     rag_chain = initialize_LLM(vectorstore, prompt)
 
     # Step 5: Invoke the RAG Chain
-    question = "Named me best 3 hotels to stay in dubai"  # Example question
+    question = "Tell me most 3 important components of a trading system"  # sample question
     result = invoke_rag_chain(rag_chain, question)
 
     # Step 6: Display the result
