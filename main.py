@@ -31,6 +31,7 @@ def main():
 
     # Step 5: Invoke the RAG Chain
     question = "Tell me most 3 important components of a trading system"  # sample question
+    print("\n❓  Query on LLM: ", question)
     result = invoke_rag_chain(rag_chain, question)
 
     # Step 6: Display the result
