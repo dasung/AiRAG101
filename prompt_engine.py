@@ -6,6 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import openai
 from dotenv import load_dotenv
+from memory import get_history
 
 # Load environment variables
 load_dotenv()
@@ -20,18 +21,29 @@ class Config:
 
 config = Config()
 
-# Create a Prompt Template
-def create_prompt_template():
+# Create a Prompt Template with chat history
+
+def create_prompt_template(user_id=None):
     """
-    Function to create a prompt template for the RAG Chain.
+    Function to create a prompt template for the RAG Chain, injecting chat history if user_id is provided.
     """
-    prompt = """You are a training assitent to onbording enginners to trading system based software company. 
-    You need to answer the question related Stock Exchange and Related Software Components. 
-    Given below is the context and question of the user.
-    context = {context}
-    question = {question}
-    """
-    return ChatPromptTemplate.from_template(prompt)
+    history = []
+    if user_id is not None:
+        history = get_history(user_id)
+    # Format history as a string
+    history_str = "\n".join(history) if history else "No recent conversation."
+    
+    prompt = f"""You are a training assistant to onboarding engineers at a trading system-based software company.
+    You need to answer questions related to Stock Exchange and Related Software Components.
+    **Recent Conversation History:**
+    {{history}}
+    **Current Context:**
+    context = {{context}}
+    **User's Current Qeary:**
+    question = {{question}}"""
+
+    # partial fill history variable but {context} and {question}) to be filled in later.
+    return ChatPromptTemplate.from_template(prompt).partial(history=history_str)
 
 def initialize_LLM(vectorstore, prompt_template):
     """
